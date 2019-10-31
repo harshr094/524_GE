@@ -7,6 +7,7 @@
 #include <vector>
 #include <queue>
 #include <utility>
+#include "par-res.h"
 
 using namespace Legion;
 using namespace std;
@@ -50,8 +51,8 @@ struct Argument
 void top_level_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime) {
 	int n = 10;
 	int size = (1<<n);
-	Rect<1> rect(0LL, size);
-	IndexSpace is = runtime->create_index_space(ctx, rect);
+	Domain domain = Domain::from_rect<2>(Rect<2>(make_point(0, 0), make_point(size - 1, size - 1)));
+  	IndexSpace is = runtime->create_index_space(ctx, domain);
     FieldSpace fs = runtime->create_field_space(ctx);
     {
         FieldAllocator allocator = runtime->create_field_allocator(ctx, fs);

@@ -87,7 +87,7 @@ void top_level_task(const Task *task, const std::vector<PhysicalRegion> &regions
     FieldSpace fs = runtime->create_field_space(ctx);
     {
         FieldAllocator allocator = runtime->create_field_allocator(ctx, fs);
-        allocator.allocate_field(sizeof(int), FID_X);
+        allocator.allocate_field(sizeof(double), FID_X);
     }
     LogicalRegion lr1 = runtime->create_logical_region(ctx, is, fs);
     Color partition_color1 = 10;
@@ -109,6 +109,84 @@ void top_level_task(const Task *task, const std::vector<PhysicalRegion> &regions
     runtime->execute_task(ctx,Print_launcher);
 }
 
+
+void a_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
+	Argument args = task->is_index_space ? *(const Argument *) task->local_args
+    : *(const Argument *) task->args;
+    int tx = args.top_x;
+    int ty = args.top_y;
+    int size = args.size;
+    const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
+    for(int k = 0 ; k < size-1; k++){
+    	for(int i = k+1; i < size; i++) {
+    		for(int j = k; j < size; j++) {
+    				write_acc[make_point(i+tx,j+ty)] -= ((write_acc[make_point(i+tx,k+ty)]*write_acc[make_point(k+tx,j+ty)])/write_acc[make_point(k+tx,k+ty)]); 
+    		}
+    	}
+    }
+
+}
+
+void b_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
+	BCargument args = task->is_index_space ? *(const BCargument *) task->local_args
+    : *(const BCargument *) task->args;
+    int tx1 = args.top_x1;
+    int ty1 = args.top_y1;
+    int tx2 = args.top_x2;
+    int ty2 = args.top_y2;
+    int size = args.size;
+    const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
+    const FieldAccessor<WRITE_DISCARD, double, 2> read_acc(regions[1], FID_X);
+    for(int k = 0 ; k < size-1; k++){
+    	for(int i = k+1; i < size; i++) {
+    		for(int j = k; j < size; j++) {
+    				write_acc[make_point(i+tx1,j+ty1)] -= ((write_acc[make_point(i+tx,k+ty)]*write_acc[make_point(k+tx,j+ty)])/write_acc[make_point(k+tx,k+ty)]); 
+    		}
+    	}
+    }
+
+}
+
+void c_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
+	BCargument args = task->is_index_space ? *(const BCargument *) task->local_args
+    : *(const BCargument *) task->args;
+    int tx1 = args.top_x1;
+    int ty1 = args.top_y1;
+    int tx2 = args.top_x2;
+    int ty2 = args.top_y2;
+    int size = args.size;
+    const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
+    const FieldAccessor<WRITE_DISCARD, double, 2> read_acc(regions[1], FID_X);
+    for(int k = 0 ; k < size-1; k++){
+    	for(int i = k+1; i < size; i++) {
+    		for(int j = k; j < size; j++) {
+    				write_acc[make_point(i+tx1,j+ty1)] -= ((write_acc[make_point(i+tx,k+ty)]*write_acc[make_point(k+tx,j+ty)])/write_acc[make_point(k+tx,k+ty)]); 
+    		}
+    	}
+    }
+}
+
+void d_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
+	Dargument args = task->is_index_space ? *(const Dargument *) task->local_args
+    : *(const Dargument *) task->args;
+    int tx1 = args.top_x1;
+    int ty1 = args.top_y1;
+    int tx2 = args.top_x2;
+    int ty2 = args.top_y2;
+    int tx3 = args.top_x3;
+    int ty3 = args.top_y3;
+    int size = args.size;
+    const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
+    const FieldAccessor<WRITE_DISCARD, double, 2> read_acc(regions[1], FID_X);
+    const FieldAccessor<WRITE_DISCARD, double, 2> read_acc(regions[2], FID_X);
+    for(int k = 0 ; k < size-1; k++){
+    	for(int i = k+1; i < size; i++) {
+    		for(int j = k; j < size; j++) {
+    				write_acc[make_point(i+tx1,j+ty1)] -= ((write_acc[make_point(i+tx,k+ty)]*write_acc[make_point(k+tx,j+ty)])/write_acc[make_point(k+tx,k+ty)]); 
+    		}
+    	}
+    }
+}
 
 
 void a_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
@@ -627,7 +705,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 void populate_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
 	Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
-    const FieldAccessor<WRITE_DISCARD, int, 2> write_acc(regions[0], FID_X);
+    const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
     for(int i = args.top_x ; i <= args.bottom_x ; i++) {
     	for(int j = args.top_y ; j <= args.bottom_y ; j++ ){
     		write_acc[make_point(i,j)] = rand()%10+1;
@@ -638,7 +716,7 @@ void populate_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 void print_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
 	Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
-    const FieldAccessor<READ_ONLY, int, 2> read_acc(regions[0], FID_X);
+    const FieldAccessor<READ_ONLY, double, 2> read_acc(regions[0], FID_X);
     for(int i = args.top_x ; i <= args.bottom_x ; i++) {
     	for(int j = args.top_y ; j <= args.bottom_y ; j++ ){
     		cout<<read_acc[make_point(i,j)]<<" ";
@@ -688,21 +766,25 @@ int main(int argc,char** argv){
     {
         TaskVariantRegistrar registrar(A_NON_LEGION_TASK_ID, "a_non_legion_task");
         registrar.add_constraint(ProcessorConstraint(Processor::LOC_PROC));
+        registrar.set_leaf(true);
         Runtime::preregister_task_variant<a_non_legion_task>(registrar, "a_non_legion_task");
     }
     {
         TaskVariantRegistrar registrar(B_NON_LEGION_TASK_ID, "b_non_legion_task");
         registrar.add_constraint(ProcessorConstraint(Processor::LOC_PROC));
+        registrar.set_leaf(true);
         Runtime::preregister_task_variant<b_non_legion_task>(registrar, "b_non_legion_task");
     }
     {
         TaskVariantRegistrar registrar(C_NON_LEGION_TASK_ID, "c_non_legion_task");
         registrar.add_constraint(ProcessorConstraint(Processor::LOC_PROC));
+        registrar.set_leaf(true);
         Runtime::preregister_task_variant<c_NON_legion_task>(registrar, "c_non_legion_task");
     }
     {
         TaskVariantRegistrar registrar(D_NON_LEGION_TASK_ID, "d_non_legion_task");
         registrar.add_constraint(ProcessorConstraint(Processor::LOC_PROC));
+        registrar.set_leaf(true);
         Runtime::preregister_task_variant<d_non_legion_task>(registrar, "d_non_legion_task");
     }
     return Runtime::start(argc, argv);

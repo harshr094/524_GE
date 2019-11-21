@@ -91,11 +91,11 @@ void top_level_task(const Task *task, const std::vector<PhysicalRegion> &regions
     Populate_launcher.add_field(0, FID_X);
     runtime->execute_task(ctx, Populate_launcher);
 
-    // Argument GEarg(0,0,0,0,0,0,0,0,partition_color1,size);
-    // TaskLauncher T_launcher(A_LEGION_TASK_ID, TaskArgument(&GEarg,sizeof(Argument)));
-    // T_launcher.add_region_requirement(RegionRequirement(lr1, WRITE_DISCARD, EXCLUSIVE, lr1));
-    // T_launcher.add_field(0, FID_X);
-    // runtime->execute_task(ctx, T_launcher);
+    Argument GEarg(0,0,0,0,0,0,0,0,partition_color1,size);
+    TaskLauncher T_launcher(A_LEGION_TASK_ID, TaskArgument(&GEarg,sizeof(Argument)));
+    T_launcher.add_region_requirement(RegionRequirement(lr1, WRITE_DISCARD, EXCLUSIVE, lr1));
+    T_launcher.add_field(0, FID_X);
+    runtime->execute_task(ctx, T_launcher);
 
     TaskLauncher Print_launcher(PRINT_TASK_ID, TaskArgument(&args,sizeof(SingleMat)));
     Print_launcher.add_region_requirement(RegionRequirement(lr1,READ_ONLY,EXCLUSIVE,lr1));

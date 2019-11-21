@@ -7,6 +7,7 @@
 #include <vector>
 #include <queue>
 #include <utility>
+#include <string>
 #include "legion_domain.h"
 
 using namespace Legion;
@@ -90,11 +91,11 @@ void top_level_task(const Task *task, const std::vector<PhysicalRegion> &regions
     Populate_launcher.add_field(0, FID_X);
     runtime->execute_task(ctx, Populate_launcher);
 
-    Argument GEarg(0,0,0,0,0,0,0,0,partition_color1,size);
-    TaskLauncher T_launcher(A_LEGION_TASK_ID, TaskArgument(&GEarg,sizeof(Argument)));
-    T_launcher.add_region_requirement(RegionRequirement(lr1, WRITE_DISCARD, EXCLUSIVE, lr1));
-    T_launcher.add_field(0, FID_X);
-    runtime->execute_task(ctx, T_launcher);
+    // Argument GEarg(0,0,0,0,0,0,0,0,partition_color1,size);
+    // TaskLauncher T_launcher(A_LEGION_TASK_ID, TaskArgument(&GEarg,sizeof(Argument)));
+    // T_launcher.add_region_requirement(RegionRequirement(lr1, WRITE_DISCARD, EXCLUSIVE, lr1));
+    // T_launcher.add_field(0, FID_X);
+    // runtime->execute_task(ctx, T_launcher);
 
     TaskLauncher Print_launcher(PRINT_TASK_ID, TaskArgument(&args,sizeof(SingleMat)));
     Print_launcher.add_region_requirement(RegionRequirement(lr1,READ_ONLY,EXCLUSIVE,lr1));
@@ -701,14 +702,35 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 }
 
 
+double convert(string s){
+	if(s[0]==' ')
+		s.erase(s.begin());
+	return stod(s);
+}
+
+vector<double> parse(string s){
+	s.erase(s.begin());
+	s.pop_back();
+	stringstream ss(s);
+	string input;
+	vector<double>vals;
+	while(getline(ss,input,',')){
+		vals.push_back(convert(input));
+	}
+	return vals;
+}
 
 void populate_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
 	SingleMat args = task->is_index_space ? *(const SingleMat *) task->local_args
     : *(const SingleMat *) task->args;
     const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
+    freopen("Input.txt","r",stdin);
+    string s;
     for(int i = args.top_x ; i <= args.bottom_x ; i++) {
+    	getline(cin,s);
+    	vector<double>input = parse(s);
     	for(int j = args.top_y ; j <= args.bottom_y ; j++ ){
-    		write_acc[make_point(i,j)] = rand()%10+1;
+    		write_acc[make_point(i,j)] = input[j];
     	}
     }
 }

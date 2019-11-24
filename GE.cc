@@ -93,7 +93,7 @@ void top_level_task(const Task *task, const std::vector<PhysicalRegion> &regions
 
     Argument GEarg(0,0,0,0,0,0,0,0,partition_color1,size);
     TaskLauncher T_launcher(A_LEGION_TASK_ID, TaskArgument(&GEarg,sizeof(Argument)));
-    T_launcher.add_region_requirement(RegionRequirement(lr1, WRITE_DISCARD, EXCLUSIVE, lr1));
+    T_launcher.add_region_requirement(RegionRequirement(lr1, READ_WRITE, EXCLUSIVE, lr1));
     T_launcher.add_field(0, FID_X);
     runtime->execute_task(ctx, T_launcher);
 
@@ -108,7 +108,7 @@ void a_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
 	Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
     int size = args.size;
-    const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
+    const FieldAccessor<READ_WRITE, double, 2> write_acc(regions[0], FID_X);
     for(int k = args.top_x4; k < args.top_x4 + size; k++){
     	for(int i = args.top_x1; i < args.top_x1 + size; i++){
     		for(int j = args.top_y1; j < args.top_y1 + size; j++){
@@ -124,7 +124,7 @@ void b_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
 	Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
     int size = args.size;
-    const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
+    const FieldAccessor<READ_WRITE, double, 2> write_acc(regions[0], FID_X);
     const FieldAccessor<READ_ONLY, double, 2> read_acc(regions[1], FID_X);
     for(int k = args.top_x4; k < args.top_x4 + size; k++){
     	for(int i = args.top_x1; i < args.top_x1 + size; i++){
@@ -141,7 +141,7 @@ void c_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
 	Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
     int size = args.size;
-    const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
+    const FieldAccessor<READ_WRITE, double, 2> write_acc(regions[0], FID_X);
     const FieldAccessor<READ_ONLY, double, 2> read_acc(regions[1], FID_X);
     for(int k = args.top_x4; k < args.top_x4 + size; k++){
     	for(int i = args.top_x1; i < args.top_x1 + size; i++){
@@ -159,7 +159,7 @@ void d_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
 	Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
     int size = args.size;
-    const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
+    const FieldAccessor<READ_WRITE, double, 2> write_acc(regions[0], FID_X);
     const FieldAccessor<READ_ONLY, double, 2> read_acc(regions[1], FID_X);
     const FieldAccessor<READ_ONLY, double, 2> read_acc2(regions[2], FID_X);
     const FieldAccessor<READ_ONLY, double, 2> read_acc3(regions[3], FID_X);
@@ -183,7 +183,7 @@ void a_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
     int half_size = size/2;
     if(size <= legion_threshold) {
     	TaskLauncher A_Serial(A_NON_LEGION_TASK_ID, TaskArgument(&args,sizeof(Argument)));
-    	A_Serial.add_region_requirement(RegionRequirement(lr,WRITE_DISCARD,EXCLUSIVE,lr));
+    	A_Serial.add_region_requirement(RegionRequirement(lr,READ_WRITE,EXCLUSIVE,lr));
     	A_Serial.add_field(0,FID_X);
     	runtime->execute_task(ctx,A_Serial);
     }
@@ -214,13 +214,13 @@ void a_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
     
     	Argument Aargs1(args.top_x1,args.top_y1,args.top_x2, args.top_y2, args.top_x3, args.top_y3,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher A_launcher(A_LEGION_TASK_ID, TaskArgument(&Aargs1,sizeof(Argument)));
-    	A_launcher.add_region_requirement(RegionRequirement(firstQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	A_launcher.add_region_requirement(RegionRequirement(firstQuad,READ_WRITE,EXCLUSIVE,lr));
     	A_launcher.add_field(0,FID_X);
     	runtime->execute_task(ctx,A_launcher);
 
     	Argument Bargs(tx,ty+half_size,args.top_x2,args.top_y2,args.top_x3,args.top_y3+half_size,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher B_laucnher(B_LEGION_TASK_ID,TaskArgument(&Bargs,sizeof(Argument)));
-    	B_laucnher.add_region_requirement(RegionRequirement(secondQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	B_laucnher.add_region_requirement(RegionRequirement(secondQuad,READ_WRITE,EXCLUSIVE,lr));
     	B_laucnher.add_region_requirement(RegionRequirement(firstQuad,READ_ONLY,EXCLUSIVE,lr));
     	B_laucnher.add_field(0,FID_X);
     	B_laucnher.add_field(1,FID_X);
@@ -228,7 +228,7 @@ void a_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Cargs(tx+half_size,ty,args.top_x2+half_size,args.top_y2,args.top_x3,args.top_y3,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher C_laucnher(C_LEGION_TASK_ID,TaskArgument(&Cargs,sizeof(Argument)));
-    	C_laucnher.add_region_requirement(RegionRequirement(thirdQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	C_laucnher.add_region_requirement(RegionRequirement(thirdQuad,READ_WRITE,EXCLUSIVE,lr));
     	C_laucnher.add_region_requirement(RegionRequirement(firstQuad,READ_ONLY,EXCLUSIVE,lr));
     	C_laucnher.add_field(0,FID_X);
     	C_laucnher.add_field(1,FID_X);
@@ -236,7 +236,7 @@ void a_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs(tx+half_size,ty+half_size,args.top_x2+half_size,args.top_y2,args.top_x3,args.top_y3+half_size,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher D_launcher(D_LEGION_TASK_ID,TaskArgument(&Dargs,sizeof(Argument)));
-    	D_launcher.add_region_requirement(RegionRequirement(fourthQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_launcher.add_region_requirement(RegionRequirement(fourthQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_launcher.add_region_requirement(RegionRequirement(thirdQuad,READ_ONLY,EXCLUSIVE,lr));
     	D_launcher.add_region_requirement(RegionRequirement(secondQuad,READ_ONLY,EXCLUSIVE,lr));
     	D_launcher.add_region_requirement(RegionRequirement(firstQuad,READ_ONLY,EXCLUSIVE,lr));
@@ -248,7 +248,7 @@ void a_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Aargs2(tx+half_size,ty+half_size,args.top_x2+half_size,args.top_y2+half_size,args.top_x3+half_size,args.top_y3+half_size,args.top_x4+half_size,args.top_y4+half_size,args.partition_color,half_size);
     	TaskLauncher A_launcher2(A_LEGION_TASK_ID, TaskArgument(&Aargs2,sizeof(Argument)));
-    	A_launcher2.add_region_requirement(RegionRequirement(fourthQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	A_launcher2.add_region_requirement(RegionRequirement(fourthQuad,READ_WRITE,EXCLUSIVE,lr));
     	A_launcher2.add_field(0,FID_X);
     	runtime->execute_task(ctx,A_launcher2);
 	}
@@ -264,7 +264,7 @@ void b_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
     int half_size = size/2;
     if(size <= legion_threshold) {
     	TaskLauncher B_Serial(B_NON_LEGION_TASK_ID, TaskArgument(&args,sizeof(Argument)));
-    	B_Serial.add_region_requirement(RegionRequirement(lr,WRITE_DISCARD,EXCLUSIVE,lr));
+    	B_Serial.add_region_requirement(RegionRequirement(lr,READ_WRITE,EXCLUSIVE,lr));
     	B_Serial.add_region_requirement(RegionRequirement(Alr,READ_ONLY,EXCLUSIVE,Alr));
     	B_Serial.add_field(0,FID_X);
     	B_Serial.add_field(1,FID_X);
@@ -317,7 +317,7 @@ void b_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Firstargs(tx1,ty1,tx2,ty2,args.top_x3,args.top_y3,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher First_launcher(B_LEGION_TASK_ID, TaskArgument(&Firstargs,sizeof(Argument)));
-    	First_launcher.add_region_requirement(RegionRequirement(firstQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	First_launcher.add_region_requirement(RegionRequirement(firstQuad,READ_WRITE,EXCLUSIVE,lr));
     	First_launcher.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	First_launcher.add_field(0,FID_X);
     	First_launcher.add_field(1,FID_X);
@@ -325,7 +325,7 @@ void b_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Secondargs(tx1,ty1+half_size,tx2,ty2,args.top_x3,args.top_y3+half_size,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher Second_laucnher(B_LEGION_TASK_ID,TaskArgument(&Secondargs,sizeof(Argument)));
-    	Second_laucnher.add_region_requirement(RegionRequirement(secondQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	Second_laucnher.add_region_requirement(RegionRequirement(secondQuad,READ_WRITE,EXCLUSIVE,lr));
     	Second_laucnher.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	Second_laucnher.add_field(0,FID_X);
     	Second_laucnher.add_field(1,FID_X);
@@ -334,7 +334,7 @@ void b_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs1(tx1+half_size,ty1,tx2+half_size,ty2,args.top_x3,args.top_y3,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher D_laucnher(D_LEGION_TASK_ID,TaskArgument(&Dargs1,sizeof(Argument)));
-    	D_laucnher.add_region_requirement(RegionRequirement(thirdQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher.add_region_requirement(RegionRequirement(thirdQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher.add_region_requirement(RegionRequirement(thirdQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	D_laucnher.add_region_requirement(RegionRequirement(firstQuad,READ_ONLY,EXCLUSIVE,lr));
     	D_laucnher.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,lr));
@@ -346,7 +346,7 @@ void b_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs2(tx1+half_size,ty1+half_size,tx2+half_size,ty2,args.top_x3,args.top_y3+half_size,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher D_laucnher2(D_LEGION_TASK_ID,TaskArgument(&Dargs2,sizeof(Argument)));
-    	D_laucnher2.add_region_requirement(RegionRequirement(fourthQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher2.add_region_requirement(RegionRequirement(fourthQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher2.add_region_requirement(RegionRequirement(thirdQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	D_laucnher2.add_region_requirement(RegionRequirement(secondQuad,READ_ONLY,EXCLUSIVE,lr));
     	D_laucnher2.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,lr));
@@ -358,7 +358,7 @@ void b_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Thirdargs(tx1+half_size,ty1,tx2+half_size,ty2+half_size,args.top_x3+half_size,args.top_y3,args.top_x4+half_size,args.top_y4+half_size,args.partition_color,half_size);
     	TaskLauncher Third_launcher(B_LEGION_TASK_ID, TaskArgument(&Thirdargs,sizeof(Argument)));
-    	Third_launcher.add_region_requirement(RegionRequirement(thirdQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	Third_launcher.add_region_requirement(RegionRequirement(thirdQuad,READ_WRITE,EXCLUSIVE,lr));
     	Third_launcher.add_region_requirement(RegionRequirement(fourthQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	Third_launcher.add_field(0,FID_X);
     	Third_launcher.add_field(1,FID_X);
@@ -366,7 +366,7 @@ void b_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Fourthargs(tx1+half_size,ty1+half_size,tx2+half_size,ty2+half_size,args.top_x3+half_size,args.top_y3+half_size,args.top_x4+half_size,args.top_y4+half_size,args.partition_color,half_size);
     	TaskLauncher Fourth_laucnher(B_LEGION_TASK_ID,TaskArgument(&Fourthargs,sizeof(Argument)));
-    	Fourth_laucnher.add_region_requirement(RegionRequirement(fourthQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	Fourth_laucnher.add_region_requirement(RegionRequirement(fourthQuad,READ_WRITE,EXCLUSIVE,lr));
     	Fourth_laucnher.add_region_requirement(RegionRequirement(fourthQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	Fourth_laucnher.add_field(0,FID_X);
     	Fourth_laucnher.add_field(1,FID_X);
@@ -384,7 +384,7 @@ void c_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
     int half_size = size/2;
     if(size <= legion_threshold) {
     	TaskLauncher C_Serial(C_NON_LEGION_TASK_ID, TaskArgument(&args,sizeof(Argument)));
-    	C_Serial.add_region_requirement(RegionRequirement(lr,WRITE_DISCARD,EXCLUSIVE,lr));
+    	C_Serial.add_region_requirement(RegionRequirement(lr,READ_WRITE,EXCLUSIVE,lr));
     	C_Serial.add_region_requirement(RegionRequirement(Alr,READ_ONLY,EXCLUSIVE,Alr));
     	C_Serial.add_field(0,FID_X);
     	C_Serial.add_field(1,FID_X);
@@ -437,7 +437,7 @@ void c_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Firstargs(tx1,ty1,tx2,ty2,args.top_x3,args.top_y3,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher First_launcher(C_LEGION_TASK_ID, TaskArgument(&Firstargs,sizeof(Argument)));
-    	First_launcher.add_region_requirement(RegionRequirement(firstQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	First_launcher.add_region_requirement(RegionRequirement(firstQuad,READ_WRITE,EXCLUSIVE,lr));
     	First_launcher.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	First_launcher.add_field(0,FID_X);
     	First_launcher.add_field(1,FID_X);
@@ -445,7 +445,7 @@ void c_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Secondargs(tx1+half_size,ty1,tx2+half_size,ty2,args.top_x3,args.top_y3,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher Second_laucnher(C_LEGION_TASK_ID,TaskArgument(&Secondargs,sizeof(Argument)));
-    	Second_laucnher.add_region_requirement(RegionRequirement(thirdQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	Second_laucnher.add_region_requirement(RegionRequirement(thirdQuad,READ_WRITE,EXCLUSIVE,lr));
     	Second_laucnher.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	Second_laucnher.add_field(0,FID_X);
     	Second_laucnher.add_field(1,FID_X);
@@ -453,7 +453,7 @@ void c_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs1(tx1,ty1+half_size,tx2,ty2,args.top_x3,args.top_y3+half_size,args.top_x4,args.top_y4,args.partition_color,half_size);
     	TaskLauncher D_laucnher(D_LEGION_TASK_ID,TaskArgument(&Dargs1,sizeof(Argument)));
-    	D_laucnher.add_region_requirement(RegionRequirement(secondQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher.add_region_requirement(RegionRequirement(secondQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher.add_region_requirement(RegionRequirement(firstQuad,READ_ONLY,EXCLUSIVE,lr));
     	D_laucnher.add_region_requirement(RegionRequirement(secondQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	D_laucnher.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,Alr));
@@ -465,7 +465,7 @@ void c_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
 		Argument Dargs2(tx1+half_size,ty1+half_size,tx2+half_size,ty2,args.top_x3,args.top_y3+half_size,args.top_x4,args.top_y4,args.partition_color,half_size);    	
     	TaskLauncher D_laucnher2(D_LEGION_TASK_ID,TaskArgument(&Dargs2,sizeof(Argument)));
-    	D_laucnher2.add_region_requirement(RegionRequirement(fourthQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher2.add_region_requirement(RegionRequirement(fourthQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher2.add_region_requirement(RegionRequirement(thirdQuad,READ_ONLY,EXCLUSIVE,lr));
     	D_laucnher2.add_region_requirement(RegionRequirement(secondQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	D_laucnher2.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,Alr));
@@ -477,7 +477,7 @@ void c_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Thirdargs(tx1,ty1+half_size,tx2,ty2+half_size,args.top_x3+half_size,args.top_y3+half_size,args.top_x4+half_size,args.top_y4+half_size,args.partition_color,half_size);
     	TaskLauncher Third_launcher(C_LEGION_TASK_ID, TaskArgument(&Thirdargs,sizeof(Argument)));
-    	Third_launcher.add_region_requirement(RegionRequirement(secondQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	Third_launcher.add_region_requirement(RegionRequirement(secondQuad,READ_WRITE,EXCLUSIVE,lr));
     	Third_launcher.add_region_requirement(RegionRequirement(fourthQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	Third_launcher.add_field(0,FID_X);
     	Third_launcher.add_field(1,FID_X);
@@ -485,7 +485,7 @@ void c_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Fourthargs(tx1+half_size,ty1+half_size,tx2+half_size,ty2+half_size,args.top_x3+half_size,args.top_y3+half_size,args.top_x4+half_size,args.top_y4+half_size,args.partition_color,half_size);
     	TaskLauncher Fourth_laucnher(C_LEGION_TASK_ID,TaskArgument(&Fourthargs,sizeof(Argument)));
-    	Fourth_laucnher.add_region_requirement(RegionRequirement(fourthQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	Fourth_laucnher.add_region_requirement(RegionRequirement(fourthQuad,READ_WRITE,EXCLUSIVE,lr));
     	Fourth_laucnher.add_region_requirement(RegionRequirement(fourthQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	Fourth_laucnher.add_field(0,FID_X);
     	Fourth_laucnher.add_field(1,FID_X);
@@ -506,7 +506,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     if(size <= legion_threshold) {
     	TaskLauncher D_Serial(D_NON_LEGION_TASK_ID, TaskArgument(&args,sizeof(Argument)));
-    	D_Serial.add_region_requirement(RegionRequirement(lr,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_Serial.add_region_requirement(RegionRequirement(lr,READ_WRITE,EXCLUSIVE,lr));
     	D_Serial.add_region_requirement(RegionRequirement(secondlr,READ_ONLY,EXCLUSIVE,secondlr));
     	D_Serial.add_region_requirement(RegionRequirement(thirdlr,READ_ONLY,EXCLUSIVE,thirdlr));
     	D_Serial.add_region_requirement(RegionRequirement(fourthlr,READ_ONLY,EXCLUSIVE,fourthlr));
@@ -604,7 +604,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs1(tx1,ty1,tx2,ty2,tx3,ty3,tx4,ty4,args.partition_color,half_size);
     	TaskLauncher D_laucnher(D_LEGION_TASK_ID,TaskArgument(&Dargs1,sizeof(Argument)));
-    	D_laucnher.add_region_requirement(RegionRequirement(firstQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher.add_region_requirement(RegionRequirement(firstQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,secondlr));
     	D_laucnher.add_region_requirement(RegionRequirement(firstQuadB,READ_ONLY,EXCLUSIVE,thirdlr));
     	D_laucnher.add_region_requirement(RegionRequirement(firstQuadC,READ_ONLY,EXCLUSIVE,fourthlr));
@@ -616,7 +616,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs2(tx1,ty1+half_size,tx2,ty2,tx3,ty3+half_size,tx4,ty4,args.partition_color,half_size);
     	TaskLauncher D_laucnher2(D_LEGION_TASK_ID,TaskArgument(&Dargs2,sizeof(Argument)));
-    	D_laucnher2.add_region_requirement(RegionRequirement(secondQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher2.add_region_requirement(RegionRequirement(secondQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher2.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,secondlr));
     	D_laucnher2.add_region_requirement(RegionRequirement(secondQuadB,READ_ONLY,EXCLUSIVE,thirdlr));
     	D_laucnher2.add_region_requirement(RegionRequirement(firstQuadC,READ_ONLY,EXCLUSIVE,fourthlr));
@@ -628,7 +628,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs3(tx1+half_size,ty1,tx2+half_size,ty2,tx3,ty3,tx4,ty4,args.partition_color,half_size);
     	TaskLauncher D_laucnher3(D_LEGION_TASK_ID,TaskArgument(&Dargs3,sizeof(Argument)));
-    	D_laucnher3.add_region_requirement(RegionRequirement(thirdQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher3.add_region_requirement(RegionRequirement(thirdQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher3.add_region_requirement(RegionRequirement(thirdQuadA,READ_ONLY,EXCLUSIVE,secondlr));
     	D_laucnher3.add_region_requirement(RegionRequirement(firstQuadB,READ_ONLY,EXCLUSIVE,thirdlr));
     	D_laucnher3.add_region_requirement(RegionRequirement(firstQuadC,READ_ONLY,EXCLUSIVE,fourthlr));
@@ -640,7 +640,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs4(tx1+half_size,ty1+half_size,tx2+half_size,ty2,tx3,ty3+half_size,tx4,ty4,args.partition_color,half_size);
     	TaskLauncher D_laucnher4(D_LEGION_TASK_ID,TaskArgument(&Dargs4,sizeof(Argument)));
-    	D_laucnher4.add_region_requirement(RegionRequirement(fourthQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher4.add_region_requirement(RegionRequirement(fourthQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher4.add_region_requirement(RegionRequirement(thirdQuadA,READ_ONLY,EXCLUSIVE,secondlr));
     	D_laucnher4.add_region_requirement(RegionRequirement(secondQuadB,READ_ONLY,EXCLUSIVE,thirdlr));
     	D_laucnher4.add_region_requirement(RegionRequirement(firstQuadC,READ_ONLY,EXCLUSIVE,fourthlr));
@@ -652,7 +652,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs5(tx1,ty1,tx2,ty2+half_size,tx3+half_size,ty3,tx4+half_size,ty4+half_size,args.partition_color,half_size);
     	TaskLauncher D_laucnher5(D_LEGION_TASK_ID,TaskArgument(&Dargs5,sizeof(Argument)));
-    	D_laucnher5.add_region_requirement(RegionRequirement(firstQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher5.add_region_requirement(RegionRequirement(firstQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher5.add_region_requirement(RegionRequirement(secondQuadA,READ_ONLY,EXCLUSIVE,secondlr));
     	D_laucnher5.add_region_requirement(RegionRequirement(thirdQuadB,READ_ONLY,EXCLUSIVE,thirdlr));
     	D_laucnher5.add_region_requirement(RegionRequirement(fourthQuadC,READ_ONLY,EXCLUSIVE,fourthlr));
@@ -664,7 +664,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs6(tx1,ty1+half_size,tx2,ty2+half_size,tx3+half_size,ty3+half_size,tx4+half_size,ty4+half_size,args.partition_color,half_size);
     	TaskLauncher D_laucnher6(D_LEGION_TASK_ID,TaskArgument(&Dargs6,sizeof(Argument)));
-    	D_laucnher6.add_region_requirement(RegionRequirement(secondQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher6.add_region_requirement(RegionRequirement(secondQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher6.add_region_requirement(RegionRequirement(secondQuadA,READ_ONLY,EXCLUSIVE,secondlr));
     	D_laucnher6.add_region_requirement(RegionRequirement(fourthQuadB,READ_ONLY,EXCLUSIVE,thirdlr));
     	D_laucnher6.add_region_requirement(RegionRequirement(fourthQuadC,READ_ONLY,EXCLUSIVE,fourthlr));
@@ -676,7 +676,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs7(tx1+half_size,ty1,tx2+half_size,ty2,tx3+half_size,ty3,tx4+half_size,ty4+half_size,args.partition_color,half_size);
     	TaskLauncher D_laucnher7(D_LEGION_TASK_ID,TaskArgument(&Dargs7,sizeof(Argument)));
-    	D_laucnher7.add_region_requirement(RegionRequirement(thirdQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher7.add_region_requirement(RegionRequirement(thirdQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher7.add_region_requirement(RegionRequirement(fourthQuadA,READ_ONLY,EXCLUSIVE,secondlr));
     	D_laucnher7.add_region_requirement(RegionRequirement(thirdQuadB,READ_ONLY,EXCLUSIVE,thirdlr));
     	D_laucnher7.add_region_requirement(RegionRequirement(fourthQuadC,READ_ONLY,EXCLUSIVE,fourthlr));
@@ -688,7 +688,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
 
     	Argument Dargs8(tx1+half_size,ty1+half_size,tx2+half_size,ty2+half_size,tx3+half_size,ty3+half_size,tx4+half_size,ty4+half_size,args.partition_color,half_size);
     	TaskLauncher D_laucnher8(D_LEGION_TASK_ID,TaskArgument(&Dargs8,sizeof(Argument)));
-    	D_laucnher8.add_region_requirement(RegionRequirement(fourthQuad,WRITE_DISCARD,EXCLUSIVE,lr));
+    	D_laucnher8.add_region_requirement(RegionRequirement(fourthQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher8.add_region_requirement(RegionRequirement(fourthQuadA,READ_ONLY,EXCLUSIVE,secondlr));
     	D_laucnher8.add_region_requirement(RegionRequirement(fourthQuadB,READ_ONLY,EXCLUSIVE,thirdlr));
     	D_laucnher8.add_region_requirement(RegionRequirement(fourthQuadC,READ_ONLY,EXCLUSIVE,fourthlr));

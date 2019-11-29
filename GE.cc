@@ -84,19 +84,16 @@ void top_level_task(const Task *task, const std::vector<PhysicalRegion> &regions
     }
     LogicalRegion lr1 = runtime->create_logical_region(ctx, is, fs);
     Color partition_color1 = 10;
-
     SingleMat args(0,0,size-1,size-1, partition_color1,size);
     TaskLauncher Populate_launcher(POPULATE_TASK_ID, TaskArgument(&args,sizeof(SingleMat)));
     Populate_launcher.add_region_requirement(RegionRequirement(lr1, WRITE_DISCARD, EXCLUSIVE, lr1));
     Populate_launcher.add_field(0, FID_X);
     runtime->execute_task(ctx, Populate_launcher);
-
     Argument GEarg(0,0,0,0,0,0,0,0,partition_color1,size);
     TaskLauncher T_launcher(A_LEGION_TASK_ID, TaskArgument(&GEarg,sizeof(Argument)));
     T_launcher.add_region_requirement(RegionRequirement(lr1, READ_WRITE, EXCLUSIVE, lr1));
     T_launcher.add_field(0, FID_X);
     runtime->execute_task(ctx, T_launcher);
-
     TaskLauncher Print_launcher(PRINT_TASK_ID, TaskArgument(&args,sizeof(SingleMat)));
     Print_launcher.add_region_requirement(RegionRequirement(lr1,READ_ONLY,EXCLUSIVE,lr1));
     Print_launcher.add_field(0,FID_X);
@@ -130,7 +127,7 @@ void b_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     	for(int i = args.top_x1; i < args.top_x1 + size; i++){
     		for(int j = args.top_y1; j < args.top_y1 + size; j++){
     			if((k<i)&&(k<j)){
-    				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (read_acc[make_point(i,k)]/read_acc[make_point(k,k)])*write_acc[make_point(k,j)];
+    				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (read_acc[make_point(i,k)]/write_acc[make_point(k,k)])*write_acc[make_point(k,j)];
     			}
     		}
     	}
@@ -147,7 +144,7 @@ void c_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     	for(int i = args.top_x1; i < args.top_x1 + size; i++){
     		for(int j = args.top_y1; j < args.top_y1 + size; j++){
     			if((k<i)&&(k<j)){
-    				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (write_acc[make_point(i,k)]/read_acc[make_point(k,k)])*read_acc[make_point(k,j)];
+    				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (write_acc[make_point(i,k)]/write_acc[make_point(k,k)])*read_acc[make_point(k,j)];
     			}
     		}
     	}
@@ -206,7 +203,6 @@ void a_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
     	else{
     		 lp = runtime->get_logical_partition_by_color(ctx, lr, args.partition_color);
     	}
-
     	LogicalRegion firstQuad = runtime->get_logical_subregion_by_color(ctx, lp, 0);
     	LogicalRegion secondQuad = runtime->get_logical_subregion_by_color(ctx, lp, 1);
     	LogicalRegion thirdQuad = runtime->get_logical_subregion_by_color(ctx, lp, 2);
@@ -337,7 +333,7 @@ void b_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
     	D_laucnher.add_region_requirement(RegionRequirement(thirdQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher.add_region_requirement(RegionRequirement(thirdQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	D_laucnher.add_region_requirement(RegionRequirement(firstQuad,READ_ONLY,EXCLUSIVE,lr));
-    	D_laucnher.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,lr));
+    	D_laucnher.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	D_laucnher.add_field(0,FID_X);
     	D_laucnher.add_field(1,FID_X);
     	D_laucnher.add_field(2,FID_X);
@@ -349,7 +345,7 @@ void b_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
     	D_laucnher2.add_region_requirement(RegionRequirement(fourthQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher2.add_region_requirement(RegionRequirement(thirdQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	D_laucnher2.add_region_requirement(RegionRequirement(secondQuad,READ_ONLY,EXCLUSIVE,lr));
-    	D_laucnher2.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,lr));
+    	D_laucnher2.add_region_requirement(RegionRequirement(firstQuadA,READ_ONLY,EXCLUSIVE,Alr));
     	D_laucnher2.add_field(0,FID_X);
     	D_laucnher2.add_field(1,FID_X);
     	D_laucnher2.add_field(2,FID_X);
@@ -674,7 +670,7 @@ void d_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions,
     	D_laucnher6.add_field(3,FID_X);
     	runtime->execute_task(ctx,D_laucnher6);
 
-    	Argument Dargs7(tx1+half_size,ty1,tx2+half_size,ty2,tx3+half_size,ty3,tx4+half_size,ty4+half_size,args.partition_color,half_size);
+    	Argument Dargs7(tx1+half_size,ty1,tx2+half_size,ty2+half_size,tx3+half_size,ty3,tx4+half_size,ty4+half_size,args.partition_color,half_size);
     	TaskLauncher D_laucnher7(D_LEGION_TASK_ID,TaskArgument(&Dargs7,sizeof(Argument)));
     	D_laucnher7.add_region_requirement(RegionRequirement(thirdQuad,READ_WRITE,EXCLUSIVE,lr));
     	D_laucnher7.add_region_requirement(RegionRequirement(fourthQuadA,READ_ONLY,EXCLUSIVE,secondlr));

@@ -716,18 +716,29 @@ vector<double> parse(string s){
 	return vals;
 }
 
+vector<string> setInput(){
+    vector<string>input;
+    input.push_back("{21.79086086, 26.47042052, 54.3690749, 29.63044792, 98.89230983, 46.691768, 54.3690749, 29.63044792}");
+    input.push_back("{40.322628, 64.51623722, 3.97365395, 65.70993964, 99.35501575, 99.26462742, 3.97365395, 65.70993964}");
+    input.push_back("{98.89230983, 46.691768, 25.02487802, 8.19186617, 21.79086086, 26.47042052, 54.3690749, 29.63044792}");
+    input.push_back("{99.35501575, 99.26462742, 16.8302012, 84.34837042, 40.322628, 64.51623722, 3.97365395, 65.70993964}");
+    input.push_back("{54.3690749, 29.63044792, 25.02487802, 8.19186617, 25.02487802, 8.19186617, 98.89230983, 46.691768}");
+    input.push_back("{3.97365395, 65.70993964, 16.8302012 , 84.34837042, 16.8302012, 84.34837042, 99.35501575, 99.26462742}");
+    input.push_back("{25.02487802, 8.19186617, 98.89230983, 46.691768, 21.79086086, 26.47042052, 21.79086086, 26.47042052}");
+    input.push_back("{16.8302012 , 84.34837042, 99.35501575, 99.26462742, 40.322628, 64.51623722, 40.322628, 64.51623722}");
+    return input;
+}
+
 void populate_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
 	SingleMat args = task->is_index_space ? *(const SingleMat *) task->local_args
     : *(const SingleMat *) task->args;
     const FieldAccessor<WRITE_DISCARD, double, 2> write_acc(regions[0], FID_X);
-    freopen("Input.txt","r",stdin);
-    string s;
+    vector<string>in = setInput();
     for(int i = args.top_x ; i <= args.bottom_x ; i++) {
-    	getline(cin,s);
-    	vector<double>input = parse(s);
+    	vector<double>input = parse(in[i]);
     	for(int j = args.top_y ; j <= args.bottom_y ; j++ ){
-    		write_acc[make_point(i,j)] = input[j];
-    	}
+    	 	write_acc[make_point(i,j)] = input[j];
+    	 }
     }
 }
 

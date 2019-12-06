@@ -109,7 +109,7 @@ void a_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     for(int k = args.top_x4; k < args.top_x4 + size; k++){
     	for(int i = args.top_x1; i < args.top_x1 + size; i++){
     		for(int j = args.top_y1; j < args.top_y1 + size; j++){
-    			if((k<i)&&(k<j)){
+    			if((k<i)&&(k<=j)){
     				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (write_acc[make_point(i,k)]/write_acc[make_point(k,k)])*write_acc[make_point(k,j)];
     			}
     		}
@@ -126,8 +126,8 @@ void b_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     for(int k = args.top_x4; k < args.top_x4 + size; k++){
     	for(int i = args.top_x1; i < args.top_x1 + size; i++){
     		for(int j = args.top_y1; j < args.top_y1 + size; j++){
-    			if((k<i)&&(k<j)){
-    				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (read_acc[make_point(i,k)]/write_acc[make_point(k,k)])*write_acc[make_point(k,j)];
+    			if((k<i)&&(k<=j)){
+    				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (read_acc[make_point(i,k)]/read_acc[make_point(k,k)])*write_acc[make_point(k,j)];
     			}
     		}
     	}
@@ -143,8 +143,8 @@ void c_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     for(int k = args.top_x4; k < args.top_x4 + size; k++){
     	for(int i = args.top_x1; i < args.top_x1 + size; i++){
     		for(int j = args.top_y1; j < args.top_y1 + size; j++){
-    			if((k<i)&&(k<j)){
-    				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (write_acc[make_point(i,k)]/write_acc[make_point(k,k)])*read_acc[make_point(k,j)];
+    			if((k<i)&&(k<=j)){
+    				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (write_acc[make_point(i,k)]/read_acc[make_point(k,k)])*read_acc[make_point(k,j)];
     			}
     		}
     	}
@@ -163,7 +163,7 @@ void d_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     for(int k = args.top_x4; k < args.top_x4 + size; k++){
     	for(int i = args.top_x1; i < args.top_x1 + size; i++){
     		for(int j = args.top_y1; j < args.top_y1 + size; j++){
-    			if((k<i)&&(k<j)){
+    			if((k<i)&&(k<=j)){
     				write_acc[make_point(i,j)] = write_acc[make_point(i,j)] - (read_acc[make_point(i,k)]/read_acc3[make_point(k,k)])*read_acc2[make_point(k,j)];
     			}
     		}
@@ -748,7 +748,10 @@ void print_task(const Task *task, const std::vector<PhysicalRegion> &regions, Co
     const FieldAccessor<READ_ONLY, double, 2> read_acc(regions[0], FID_X);
     for(int i = args.top_x ; i <= args.bottom_x ; i++) {
     	for(int j = args.top_y ; j <= args.bottom_y ; j++ ){
-    		cout<<read_acc[make_point(i,j)]<<" ";
+            if(read_acc[make_point(i,j)] < 0.01)
+                cout<<0<<" ";
+            else
+    		  cout<<read_acc[make_point(i,j)]<<" ";
     	} cout<<endl;
     }
 }

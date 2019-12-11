@@ -104,7 +104,6 @@ void top_level_task(const Task *task, const std::vector<PhysicalRegion> &regions
 
 
 void a_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
-    cout<<"Called A"<<endl;
     Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
     int size = args.size;
@@ -112,11 +111,10 @@ void a_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     Rect<2> rect = runtime->get_index_space_domain(ctx,regions[0].get_logical_region().get_index_space());
     size_t strides[2];
     double *x_ptr = acc.ptr(rect,strides);
-    A_non_legion_task(&x_ptr,strides[1],args.top_x4,args.top_x1,args.top_y1,size);
+    A_non_legion_task(x_ptr,strides[1],args.top_x4,args.top_x1,args.top_y1,size);
 }
 
 void b_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
-    cout<<"Called B"<<endl;
     Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
     int size = args.size;
@@ -124,15 +122,14 @@ void b_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     Rect<2> rect = runtime->get_index_space_domain(ctx,regions[0].get_logical_region().get_index_space());
     size_t strides[2];
     double *x_ptr = acc.ptr(rect,strides);
-    const FieldAccessor<READ_WRITE, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc2(regions[1],FID_X);
+    const FieldAccessor<READ_ONLY, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc2(regions[1],FID_X);
     Rect<2> rect2 = runtime->get_index_space_domain(ctx,regions[1].get_logical_region().get_index_space());
     size_t strides2[2];
     double *x_ptr2 = acc.ptr(rect2,strides2);
-    B_non_legion_task(&x_ptr,&x_ptr2,strides[1],strides2[1],args.top_x4,args.top_x1,args.top_y1,size);
+    B_non_legion_task(x_ptr,x_ptr2,strides[1],strides2[1],args.top_x4,args.top_x1,args.top_y1,size);
 }
 
 void c_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
-    cout<<"Called C"<<endl;
     Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
     int size = args.size;
@@ -140,16 +137,15 @@ void c_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     Rect<2> rect = runtime->get_index_space_domain(ctx,regions[0].get_logical_region().get_index_space());
     size_t strides[2];
     double *x_ptr = acc.ptr(rect,strides);
-    const FieldAccessor<READ_WRITE, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc2(regions[1],FID_X);
+    const FieldAccessor<READ_ONLY, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc2(regions[1],FID_X);
     Rect<2> rect2 = runtime->get_index_space_domain(ctx,regions[1].get_logical_region().get_index_space());
     size_t strides2[2];
     double *x_ptr2 = acc.ptr(rect2,strides2);
-    C_non_legion_task(&x_ptr,&x_ptr2,strides[1],strides2[1],args.top_x4,args.top_x1,args.top_y1,size);
+    C_non_legion_task(x_ptr,x_ptr2,strides[1],strides2[1],args.top_x4,args.top_x1,args.top_y1,size);
 }
 
 
 void d_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regions, Context ctx, HighLevelRuntime *runtime){
-    cout<<"Called D"<<endl;
     Argument args = task->is_index_space ? *(const Argument *) task->local_args
     : *(const Argument *) task->args;
     int size = args.size;
@@ -157,19 +153,19 @@ void d_non_legion_task(const Task *task, const std::vector<PhysicalRegion> &regi
     Rect<2> rect = runtime->get_index_space_domain(ctx,regions[0].get_logical_region().get_index_space());
     size_t strides[2];
     double *x_ptr = acc.ptr(rect,strides);
-    const FieldAccessor<READ_WRITE, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc2(regions[1],FID_X);
+    const FieldAccessor<READ_ONLY, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc2(regions[1],FID_X);
     Rect<2> rect2 = runtime->get_index_space_domain(ctx,regions[1].get_logical_region().get_index_space());
     size_t strides2[2];
     double *x_ptr2 = acc.ptr(rect2,strides2);
-    const FieldAccessor<READ_WRITE, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc3(regions[2],FID_X);
+    const FieldAccessor<READ_ONLY, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc3(regions[2],FID_X);
     Rect<2> rect3 = runtime->get_index_space_domain(ctx,regions[2].get_logical_region().get_index_space());
     size_t strides3[2];
     double *x_ptr3 = acc.ptr(rect3,strides3);
-    const FieldAccessor<READ_WRITE, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc4(regions[3],FID_X);
+    const FieldAccessor<READ_ONLY, double, 2, coord_t, Realm::AffineAccessor<double, 2, coord_t> > acc4(regions[3],FID_X);
     Rect<2> rect4 = runtime->get_index_space_domain(ctx,regions[3].get_logical_region().get_index_space());
     size_t strides4[2];
     double *x_ptr4 = acc.ptr(rect4,strides4);
-    D_non_legion_task(&x_ptr,&x_ptr2,&x_ptr3,&x_ptr4,strides[1],strides2[1],strides3[1],strides4[1],args.top_x4,args.top_x1,args.top_y1,size);
+    D_non_legion_task(x_ptr,x_ptr2,x_ptr3,x_ptr4,strides[1],strides2[1],strides3[1],strides4[1],args.top_x4,args.top_x1,args.top_y1,size);
 }
 
 
